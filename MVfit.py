@@ -15,8 +15,6 @@ rawdata = genfromtxt('testdata.csv',delimiter=',')
 rawdata = rawdata[1:] #remove top row of text
 
 N= len(rawdata)  
-
-
 data = sp.zeros((N,4))
 
 #Get X coefficients
@@ -25,9 +23,6 @@ for index,x in enumerate(rawdata):
     print(index)
     # For dX/dt, do 2-point slope, except for first and last datapoints
     if index==0:
-        print(x)
-        print(rawdata[index][0])
-        print(rawdata[index+1][0])
         data[index,0]=rawdata[index+1][0] - rawdata[index][0] 
     elif index==N-1:
         data[index,0]=rawdata[index][0] - rawdata[index-1][0]
@@ -37,17 +32,12 @@ for index,x in enumerate(rawdata):
     data[index,2]=x[0]**2 #X^2
     data[index,3]=x[0]*x[1] #XY
 
-print(data)
-print("\n\n\n\n\n")
 xdata = sp.array(data)
 dx = sp.array(xdata[:,0])
 xdata = sp.transpose(xdata[:,1:])
-
-
 xpopt, xpcov = curve_fit(fn,xdata,dx) #Fit for dX/dt parameters
 
 #Get Y Coefficients
-#so redundant, at least it works
 for index,x in enumerate(rawdata):
 
     # For dY/dt, do 2-point slope, except for first and last datapoints
@@ -61,7 +51,6 @@ for index,x in enumerate(rawdata):
     data[index,2]=x[1]**2 #Y^2
     data[index,3]=x[0]*x[1] #XY
 
-print(data)
 #Put ydata into scipy array
 ydata = sp.array(data)
 dy = sp.array(ydata[:,0]) #Get dY/dt values from first column
@@ -80,8 +69,6 @@ print ypopt
 stdx = np.sqrt(np.diag(xpcov))
 stdy = np.sqrt(np.diag(ypcov)) 
 
-
-
 #define error as sqrt((Rstd/R)^2+(Mstd/M)^2+...)
 error= sum(np.square(np.divide(np.concatenate([stdx,stdy]),np.concatenate([xpopt,ypopt]))))**(.5)
 print "Error: "+str(error)
@@ -89,6 +76,7 @@ print "Error: "+str(error)
 r = [xpopt[0],ypopt[0]]
 M = [xpopt[1],ypopt[1]]
 a = [-1*xpopt[2],-1*ypopt[2]]
+
 
 
 #PART 2
@@ -112,13 +100,8 @@ ax1 = fig.add_subplot(111)
 ax1.plot(t,soln[:, 0], c='b', label='Fit X')
 ax1.plot(t,soln[:, 1], c='r', label='Fit Y')
 
-ax1.plot(range(N),np.transpose(xdata)[:,0], c='c', label='Data X')
-ax1.plot(range(N),np.transpose(ydata)[:,0], c='g', label='Data Y')
-
-
-
-#ax1.plot(range(N),rawdata[:,0], c='c', label='Data X')
-#ax1.plot(range(N),rawdata[:,1], c='g', label='Data Y')
+ax1.plot(range(N),rawdata[:,0], c='c', label='Data X')
+ax1.plot(range(N),rawdata[:,1], c='g', label='Data Y')
 
 #make parameters human readable
 textstring = ''
