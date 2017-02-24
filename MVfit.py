@@ -10,43 +10,59 @@ def fn(x,e,f,g):
 
 
 rawdata = genfromtxt('testdata.csv',delimiter=',')
-N = len(rawdata)-2
-#data gets X,Y and transforms it into dX/dt, X, X^2, XY
+rawdata = rawdata[1:] #remove top row of text
+
+N= len(rawdata)  
+
 
 data = sp.zeros((N,4))
 
 #Get X coefficients
+#data gets X,Y and transforms it into dX/dt, X, X^2, XY
+for index,x in enumerate(rawdata):
 
-for index,x in enumerate(rawdata[1:-1]):
-    data[index,0]=rawdata[index+2][0] - rawdata[index+1][0] #dX/dt
+    # For dX/dt, do 2-point slope, except for first and last datapoints
+    if index==0:
+        data[index,0]=rawdata[index+1][0] - rawdata[index][0] 
+    if index==N-1:
+        data[index,0]=rawdata[index][0] - rawdata[index-1][0]
+    else:
+        data[index,0]=(rawdata[index+1][0] - rawdata[index-1][0])/2
     data[index,1]=x[0] #X
     data[index,2]=x[0]**2 #X^2
     data[index,3]=x[0]*x[1] #XY
 
-
+print(data)
 xdata = sp.array(data)
 dx = sp.array(xdata[:,0])
 xdata = sp.transpose(xdata[:,1:])
 
-xpopt, xpcov = curve_fit(fn,xdata,dx) #Fit for dX/dt parameters
 
-newdx = fn(xdata,xpopt[0],xpopt[1],xpopt[2])#Calculate dY/dT from new parameters
+xpopt, xpcov = curve_fit(fn,xdata,dx) #Fit for dX/dt parameters
 
 #Get Y Coefficients
 #so redundant, at least it works
-for index,x in enumerate(rawdata[1:-1]):
-    data[index,0]=rawdata[index+2][1] - rawdata[index+1][1] #dY/dt
+for index,x in enumerate(rawdata):
+
+    # For dY/dt, do 2-point slope, except for first and last datapoints
+    if index==0:
+        data[index,0]=rawdata[index+1][1] - rawdata[index][1] 
+    if index==N-1:
+        data[index,0]=rawdata[index][1] - rawdata[index-1][1]
+    else:
+        data[index,0]=(rawdata[index+1][1] - rawdata[index-1][1])/2
     data[index,1]=x[1] #Y
     data[index,2]=x[1]**2 #Y^2
     data[index,3]=x[0]*x[1] #XY
 
+#Put ydata into scipy array
 ydata = sp.array(data)
-dy = sp.array(ydata[:,0])
-ydata = sp.transpose(ydata[:,1:])
+dy = sp.array(ydata[:,0]) #Get dY/dt values from first column
+ydata = sp.transpose(ydata[:,1:]) #Transpose ydata for curve_fit
 
-ypopt, ypcov = curve_fit(fn,ydata,dy)#,bounds=[(0,np.inf),(0,np.inf),(np.inf)]) #Fit for dY/dt parameters
 
-newdy = fn(data,ypopt[0],ypopt[1],ypopt[2]) #Calculate dY/dT from new parameters
+
+ypopt, ypcov = curve_fit(fn,ydata,dy)#Fit parameters for Y,Y^2,XY to dY/dT
 
 #turn values into recognizable coefficients in the form [r1, k1, a1]
 xpopt[1]= -1*xpopt[0]/xpopt[1]
@@ -83,20 +99,22 @@ def species(y,t):   #f0, f1 = dX/dt, dY/dt;   r,M,a are [rx,ry], [Mx,My], etc
     return [f0,f1]
 
 #Get IC from original data
-X0=rawdata[1][0]
-Y0=rawdata[1][1]
-t = np.linspace(0,N-1,100*N) #number of months to simulate
+X0=rawdata[0][0]
+Y0=rawdata[0][1]
+t = np.linspace(0,N,N) #number of months to simulate
 
 soln = odeint(species, [X0,Y0],t)#solve ODEs
-
+print(soln)
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 #Only plot dX/dt at the moment
 ax1.plot(t,soln[:, 0], c='b', label='Fit X')
 ax1.plot(t,soln[:, 1], c='r', label='Fit Y')
-ax1.plot(range(N),rawdata[1:-1,0], c='c', label='Data X')
-ax1.plot(range(N),rawdata[1:-1,1], c='g', label='Data Y')
+
+
+ax1.plot(range(N),rawdata[:,0], c='c', label='Data X')
+ax1.plot(range(N),rawdata[:,1], c='g', label='Data Y')
 
 #make parameters human readable
 textstring = ''
