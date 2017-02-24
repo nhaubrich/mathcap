@@ -20,7 +20,6 @@ data = sp.zeros((N,4))
 #Get X coefficients
 #data gets X,Y and transforms it into dX/dt, X, X^2, XY
 for index,x in enumerate(rawdata):
-    print(index)
     # For dX/dt, do 2-point slope, except for first and last datapoints
     if index==0:
         data[index,0]=rawdata[index+1][0] - rawdata[index][0] 
