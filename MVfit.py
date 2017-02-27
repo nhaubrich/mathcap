@@ -61,8 +61,8 @@ ypopt, ypcov = curve_fit(fn,ydata,dy)#Fit parameters for Y,Y^2,XY to dY/dT
 xpopt[1]= -1*xpopt[0]/xpopt[1]
 ypopt[1]= -1*ypopt[0]/ypopt[1]
 
-print xpopt
-print ypopt
+print(xpopt)
+print(ypopt)
 
 #standard deviations
 stdx = np.sqrt(np.diag(xpcov))
@@ -70,7 +70,7 @@ stdy = np.sqrt(np.diag(ypcov))
 
 #define error as sqrt((Rstd/R)^2+(Mstd/M)^2+...)
 error= sum(np.square(np.divide(np.concatenate([stdx,stdy]),np.concatenate([xpopt,ypopt]))))**(.5)
-print "Error: "+str(error)
+print("Error: "+str(error))
 
 r = [xpopt[0],ypopt[0]]
 M = [xpopt[1],ypopt[1]]
