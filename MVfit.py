@@ -28,10 +28,14 @@ def matrixify(rawdata): #turns 2d array of [t,x,y] into [dx/dt,x,x^2,y,t]
 #PART 1
 #Import data and calculate fit parameters
 
-rawdata = genfromtxt('testdata1.csv',delimiter=',')
+rawdata = genfromtxt('huffbuzz12.csv',delimiter=',')
 rawdata = rawdata[1:] #remove top row of text
 
 N= len(rawdata)  
+fulldata = rawdata
+rawdata = rawdata[:np.round(N*4/5)]   #uncomment to remove some data for regression for blinding purposes
+
+
 
 #Put in [t,x,y] to get out [dx/dt,x,x^2,xy]
 xdata = matrixify(rawdata)
@@ -76,7 +80,7 @@ def species(y,t):   #f0, f1 = dX/dt, dY/dt;   r,M,a are [rx,ry], [Mx,My], etc
 #Get IC from original data
 X0=rawdata[0][1]
 Y0=rawdata[0][2]
-t = np.linspace(rawdata[0,0],rawdata[-1,0],1000)
+t = np.linspace(fulldata[0,0],fulldata[-1,0],1000)
 
 soln = odeint(species, [X0,Y0],t)#solve ODEs
 fig = plt.figure()
@@ -86,8 +90,8 @@ ax1 = fig.add_subplot(111)
 ax1.plot(t,soln[:, 0], c='b', label='Fit X')
 ax1.plot(t,soln[:, 1], c='r', label='Fit Y')
 
-ax1.plot(rawdata[:,0],rawdata[:,1], c='c', label='Data X')
-ax1.plot(rawdata[:,0],rawdata[:,2], c='g', label='Data Y')
+ax1.plot(fulldata[:,0],fulldata[:,1], c='c', label='Data X')
+ax1.plot(fulldata[:,0],fulldata[:,2], c='g', label='Data Y')
 
 #make parameters human readable
 textstring = ''
@@ -96,6 +100,6 @@ for i in r+M+a:
 
 ax1.set_title('r1, r2, M1, M2 ,a1, a2\n'+textstring)
 legend = ax1.legend(loc='upper center', shadow=False)
-
+plt.autoscale(enable=True,axis='both',tight=True)
 plt.show()
 
