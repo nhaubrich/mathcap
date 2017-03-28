@@ -33,7 +33,8 @@ rawdata = rawdata[1:] #remove top row of text
 
 N= len(rawdata)  
 fulldata = rawdata
-rawdata = rawdata[:np.round(N*4/5)]   #uncomment to remove some data for regression for blinding purposes
+rawdata = rawdata[:-10]
+#rawdata = rawdata[:np.round(N*4/5)]   #uncomment to remove some data for regression for blinding purposes
 
 
 

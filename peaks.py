@@ -26,8 +26,8 @@ def peakheight(data):	#takes column of y values
 
 
 	
-data = genfromtxt('huff3.csv',delimiter=',')
-data = data[1:] #remove top row of text
+data = genfromtxt('huffbuzz12.csv',delimiter=',')
+data = data[1:][:,1:3] #remove top row of text,first column
 
 xpeaks = np.array(peakheight(data[:,0]))
 ypeaks = np.array(peakheight(data[:,1]))
@@ -37,9 +37,9 @@ common_params = dict(bins=100, range=(0, 100),normed=False)
 common_params['histtype'] = 'step'
 plt.title('Peak Size Distribution')
 # the histogram of the data
-n, bins, patches = plt.hist(xpeaks[:,1], facecolor='green', alpha=0.75, **common_params)
+n, bins, patches = plt.hist(xpeaks[:,1], facecolor='g', alpha=0.75, color='c', **common_params)
 
-n, bins, patches = plt.hist(ypeaks[:,1], facecolor='green', alpha=0.75, **common_params)
+n, bins, patches = plt.hist(ypeaks[:,1], facecolor='c', alpha=0.75,color='g', **common_params)
 
 
 
