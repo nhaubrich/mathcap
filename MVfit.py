@@ -28,14 +28,20 @@ def matrixify(rawdata): #turns 2d array of [t,x,y] into [dx/dt,x,x^2,y,t]
 #PART 1
 #Import data and calculate fit parameters
 
-rawdata = genfromtxt('huffbuzz12.csv',delimiter=',')
+rawdata = genfromtxt('wvt.csv',delimiter=',')
 rawdata = rawdata[1:] #remove top row of text
 
 N= len(rawdata)  
+#remove every nov and dec
+
+
 fulldata = rawdata
+
+rawdata = np.delete(rawdata, range(11,N,12), axis=0)
+rawdata = np.delete(rawdata, range(10,N,11), axis=0)
+
 rawdata = rawdata[:-10]
 #rawdata = rawdata[:np.round(N*4/5)]   #uncomment to remove some data for regression for blinding purposes
-
 
 
 #Put in [t,x,y] to get out [dx/dt,x,x^2,xy]
@@ -74,8 +80,8 @@ a = [-1*xpopt[2],-1*ypopt[2]]
 #Plug coefficients into dif-eq and solve it
 
 def species(y,t):   #f0, f1 = dX/dt, dY/dt;   r,M,a are [rx,ry], [Mx,My], etc
-    f0 = r[0]*y[0]*(1-y[0]/M[0])-a[0]*y[0]*y[1]
-    f1 = r[1]*y[1]*(1-y[1]/M[1])-a[1]*y[0]*y[1]
+    f0 = r[0]*y[0]*(1-y[0]/M[0])-a[0]*y[0]*y[1]+15*(np.sign(t-119.5)+1)*(np.sign(122.5-t)+1)
+    f1 = r[1]*y[1]*(1-y[1]/M[1])-a[1]*y[0]*y[1]+22*(np.sign(t-119.5)+1)*(np.sign(122.5-t)+1)
     return [f0,f1]
 
 #Get IC from original data
