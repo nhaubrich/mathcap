@@ -7,33 +7,58 @@ import matplotlib.pyplot as plt
 
 
 def peakheight(data):	#takes column of y values
-	#Go through y-values and identify local maxima, calculate height based on most recent minimum
-	#return array of [peak x-value, peak height]
-	peaks = []
-	
-	for x in range(1,len(data)-1):
-		#check if peak
-		if( data[x]>data[x-1]) and (data[x]>data[x+1]):
-			i=1
-			#find previous local min, x-i part keeps index in bounds
-			while(data[x-i] > data[x-(i+1)]) and ((x-i)>=0):
-				i+=1
-		#	print(str(x) + " is a peak of height "+str(data[x]-data[x-i]))
-			peaks.append([x, data[x]-data[x-i]])
-	return peaks
+    #Go through y-values and identify local maxima, calculate height based on most recent minimum
+    #return array of [peak x-value, peak height]
+    peaks = []
+
+    for x in range(1,len(data)-1):
+            i = 0
+            #check if peak
+            if( data[x]>=data[x-1]) and (data[x]>=data[x+1]):
+                i=1
+                #find previous local min, x-i part keeps index in bounds
+                while(data[x-i] > data[x-(i+1)]) and ((x-i)>=0):
+                        i+=1
+                        #print(str(x) + " is a peak of height "+str(data[x]-data[x-i]))
+                if ((data[x]-data[x-i])!=0):
+                    peaks.append([x, data[x]-data[x-i]])
+
+    return peaks
 
 
 
 
-	
-data = genfromtxt('huffbuzz12.csv',delimiter=',')
+
+
+data = genfromtxt('Walmart_withoutpeak.csv',delimiter=',')
 data = data[1:][:,1:3] #remove top row of text,first column
+
 
 xpeaks = np.array(peakheight(data[:,0]))
 ypeaks = np.array(peakheight(data[:,1]))
 
-common_params = dict(bins=100, range=(0, 100),normed=False)
+print xpeaks
 
+#def outlierdetection(peaks): #takes array of peak heights
+#    # goes through array of peak heights and labels outliers
+#    # outliers are determined by peak heights that exceed 2 standard deviations away from mean
+#    outliers = []
+#    std = np.std(peaks)
+#    mean = np.mean(peaks)
+#    max = mean + 2 * std
+#    print mean
+#
+#    for x in peaks:
+#        if (x > max):
+#            outliers.append(x)
+#    return outliers
+#
+#xoutliers = np.array(outlierdetection(xpeaks[:,1]))
+#youtliers = np.array(outlierdetection(ypeaks[:,1]))
+
+
+
+common_params = dict(bins=100, range=(0, 100),normed=False)
 common_params['histtype'] = 'step'
 plt.title('Peak Size Distribution')
 # the histogram of the data
