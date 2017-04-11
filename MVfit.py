@@ -41,7 +41,7 @@ rawdata = np.delete(rawdata, range(11,N,12), axis=0)
 rawdata = np.delete(rawdata, range(10,N,11), axis=0)
 
 rawdata = rawdata[:-10]
-#rawdata = rawdata[:np.round(N*4/5)]   #uncomment to remove some data for regression for blinding purposes
+#rawdata = rawdata[:np.round(N*2/3)]   #uncomment to remove some data for regression for blinding purposes
 
 
 #Put in [t,x,y] to get out [dx/dt,x,x^2,xy]
@@ -75,25 +75,34 @@ r = [xpopt[0],ypopt[0]]
 M = [xpopt[1],ypopt[1]]
 a = [-1*xpopt[2],-1*ypopt[2]]
 
+#r = [.05, .06]
+#M = [100,100]
+#a = [-.002, .005]
+
 
 #PART 2
 #Plug coefficients into dif-eq and solve it
 
+def drivingforce(start,stop,x):
+    if start <= x <= stop:
+        return 1
+    else:
+        return 0
+    
 def species(y,t):   #f0, f1 = dX/dt, dY/dt;   r,M,a are [rx,ry], [Mx,My], etc
-    f0 = r[0]*y[0]*(1-y[0]/M[0])-a[0]*y[0]*y[1]+15*(np.sign(t-119.5)+1)*(np.sign(122.5-t)+1)
-    f1 = r[1]*y[1]*(1-y[1]/M[1])-a[1]*y[0]*y[1]+22*(np.sign(t-119.5)+1)*(np.sign(122.5-t)+1)
+    f0 = r[0]*y[0]*(1-y[0]/M[0])-a[0]*y[0]*y[1]+10*drivingforce(118,120,t)
+    f1 = r[1]*y[1]*(1-y[1]/M[1])-a[1]*y[0]*y[1]+20*drivingforce(118,120,t)
     return [f0,f1]
 
 #Get IC from original data
 X0=rawdata[0][1]
 Y0=rawdata[0][2]
-t = np.linspace(fulldata[0,0],fulldata[-1,0],1000)
+t = np.linspace(fulldata[0,0],fulldata[-1,0],100000)
 
-soln = odeint(species, [X0,Y0],t)#solve ODEs
+soln = odeint(species, [X0,Y0],t, hmax = .5)#solve ODEs
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-#Only plot dX/dt at the moment
 ax1.plot(t,soln[:, 0], c='b', label='Fit X')
 ax1.plot(t,soln[:, 1], c='r', label='Fit Y')
 
@@ -106,7 +115,7 @@ for i in r+M+a:
     textstring+="{0:.5f}".format(i)+", "
 
 ax1.set_title('r1, r2, M1, M2 ,a1, a2\n'+textstring)
-legend = ax1.legend(loc='upper center', shadow=False)
+legend = ax1.legend(loc='upper left', shadow=False)
 plt.autoscale(enable=True,axis='both',tight=True)
 plt.show()
 
