@@ -28,19 +28,17 @@ def matrixify(rawdata): #turns 2d array of [t,x,y] into [dx/dt,x,x^2,y,t]
 #PART 1
 #Import data and calculate fit parameters
 
-rawdata = genfromtxt('wvt.csv',delimiter=',')
+rawdata = genfromtxt('decay2014.csv',delimiter=',')
 rawdata = rawdata[1:] #remove top row of text
 
 N= len(rawdata)  
-#remove every nov and dec
-
 
 fulldata = rawdata
 
-rawdata = np.delete(rawdata, range(11,N,12), axis=0)
-rawdata = np.delete(rawdata, range(10,N,11), axis=0)
+#rawdata = np.delete(rawdata, range(11,N,12), axis=0)
+#rawdata = np.delete(rawdata, range(10,N,11), axis=0)
 
-rawdata = rawdata[:-10]
+#rawdata = rawdata[0:5]
 #rawdata = rawdata[:np.round(N*2/3)]   #uncomment to remove some data for regression for blinding purposes
 
 
@@ -67,10 +65,6 @@ print(ypopt)
 stdx = np.sqrt(np.diag(xpcov))
 stdy = np.sqrt(np.diag(ypcov)) 
 
-#define error as sqrt((Rstd/R)^2+(Mstd/M)^2+...)
-error= sum(np.square(np.divide(np.concatenate([stdx,stdy]),np.concatenate([xpopt,ypopt]))))**(.5)
-print("Error: "+str(error))
-
 r = [xpopt[0],ypopt[0]]
 M = [xpopt[1],ypopt[1]]
 a = [-1*xpopt[2],-1*ypopt[2]]
@@ -90,8 +84,8 @@ def drivingforce(start,stop,x):
         return 0
     
 def species(y,t):   #f0, f1 = dX/dt, dY/dt;   r,M,a are [rx,ry], [Mx,My], etc
-    f0 = r[0]*y[0]*(1-y[0]/M[0])-a[0]*y[0]*y[1]+10*drivingforce(118,120,t)
-    f1 = r[1]*y[1]*(1-y[1]/M[1])-a[1]*y[0]*y[1]+20*drivingforce(118,120,t)
+    f0 = r[0]*y[0]*(1-y[0]/M[0])-a[0]*y[0]*y[1]#+10*drivingforce(118,120,t)
+    f1 = r[1]*y[1]*(1-y[1]/M[1])-a[1]*y[0]*y[1]#+20*drivingforce(118,120,t)
     return [f0,f1]
 
 #Get IC from original data
@@ -108,6 +102,31 @@ ax1.plot(t,soln[:, 1], c='r', label='Fit Y')
 
 ax1.plot(fulldata[:,0],fulldata[:,1], c='c', label='Data X')
 ax1.plot(fulldata[:,0],fulldata[:,2], c='g', label='Data Y')
+
+#chi squared fit: sum (observed - expected)^2/expected
+
+#The numeric fit's time steps don't perfectly match data's time steps
+#this function finds the time closest to 'value' and returns the corresponding species value
+def find_nearest(time,fit, value):
+    index = (np.abs(time - value)).argmin()
+    return fit[index]
+
+chisq = 0
+for row in fulldata:
+    #X species
+    obs = row[1]
+    exp =find_nearest(t,soln[:,0], row[0]) 
+    chisq+=(obs - exp)**2/exp  
+    
+    #Y species
+    obs = row[2]
+    exp = find_nearest(t,soln[:,1], row[0])
+    chisq+=(obs - exp)**2/exp
+
+#reduced chi^2: chi^2/(datapoints - fitted parameters)
+red_chisq = chisq/(len(2*fulldata[:,0]) - 6)
+
+print("The reduced chi^2 is " + str(red_chisq))
 
 #make parameters human readable
 textstring = ''
